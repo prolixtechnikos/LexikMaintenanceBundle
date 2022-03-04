@@ -17,15 +17,18 @@
         {
             "name": "Djuri Baars",
             "email" : "info@djurict.nl"
+        },
+        {
+            "name": "ToshY"
         }
     ],
     "require": {
-        "php": ">=5.3.9",
-        "symfony/framework-bundle": "~2.7|~3.0|^4.0|^5.0",
-        "symfony/translation": "~2.7|~3.0|^4.0|^5.0"
+        "php": ">=7.4",
+        "symfony/framework-bundle": "~2.7|~3.0|^4.0|^5.0|^6.0",
+        "symfony/translation": "~2.7|~3.0|^4.0|^5.0|^6.0"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "~2.7|~3.0|^4.0|^5.0",
+        "symfony/phpunit-bridge": "~2.7|~3.0|^4.0|^5.0|^6.0",
         "phpunit/phpunit": "8.5.*"
     },
     "autoload":     {
