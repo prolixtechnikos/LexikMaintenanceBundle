@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * Create a lock action
@@ -33,7 +35,7 @@ class DriverLockCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lexik:maintenance:lock')
@@ -66,7 +68,7 @@ EOT
         if ($input->isInteractive()) {
             if (!$this->askConfirmation('WARNING! Are you sure you wish to continue? (y/n)', $input, $output)) {
                 $output->writeln('<error>Maintenance cancelled!</error>');
-                return;
+                return Command::FAILURE;
             }
         } elseif (null !== $input->getArgument('ttl')) {
             $this->ttl = $input->getArgument('ttl');
@@ -80,13 +82,13 @@ EOT
         }
 
         $output->writeln('<info>'.$driver->getMessageLock($driver->lock()).'</info>');
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $driver = $this->getDriver();
         $default = $driver->getOptions();
@@ -97,21 +99,21 @@ EOT
             throw new \InvalidArgumentException('Time must be an integer');
         }
 
-        $output->writeln(array(
+        $output->writeln([
             '',
             $formatter->formatBlock('You are about to launch maintenance', 'bg=red;fg=white', true),
             '',
-        ));
+        ]);
 
         $ttl = null;
         if ($driver instanceof DriverTtlInterface) {
             if (null === $input->getArgument('ttl')) {
-                $output->writeln(array(
+                $output->writeln([
                     '',
                     'Do you want to redefine maintenance life time ?',
                     'If yes enter the number of seconds. Press enter to continue',
                     '',
-                ));
+                ]);
 
                 $ttl = $this->askAndValidate(
                     $input,
@@ -120,18 +122,20 @@ EOT
                     function($value) use ($default) {
                         if (!is_numeric($value) && null === $default) {
                             return null;
-                        } elseif (!is_numeric($value)) {
+                        }
+
+                        if (!is_numeric($value)) {
                             throw new \InvalidArgumentException('Time must be an integer');
                         }
                         return $value;
                     },
                     1,
-                    isset($default['ttl']) ? $default['ttl'] : 0
+                    $default['ttl'] ?? 0
                 );
             }
 
             $ttl = (int) $ttl;
-            $this->ttl = $ttl ? $ttl : $input->getArgument('ttl');
+            $this->ttl = $ttl ?: $input->getArgument('ttl');
         } else {
             $output->writeln(array(
                 '',
@@ -141,12 +145,7 @@ EOT
         }
     }
 
-    /**
-     * Get driver
-     *
-     * @return AbstractDriver
-     */
-    private function getDriver()
+    private function getDriver(): AbstractDriver
     {
         return $this->container->get('lexik_maintenance.driver.factory')->getDriver();
     }
@@ -167,7 +166,7 @@ EOT
         }
 
         return $this->getHelper('question')
-            ->ask($input, $output, new \Symfony\Component\Console\Question\ConfirmationQuestion($question));
+            ->ask($input, $output, new ConfirmationQuestion($question));
     }
 
     /**
@@ -188,7 +187,7 @@ EOT
                 ->askAndValidate($output, $question, $validator, $attempts, $default);
         }
 
-        $question = new \Symfony\Component\Console\Question\Question($question, $default);
+        $question = new Question($question, $default);
         $question->setValidator($validator);
         $question->setMaxAttempts($attempts);
 

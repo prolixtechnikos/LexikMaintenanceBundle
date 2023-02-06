@@ -4,12 +4,16 @@ namespace Lexik\Bundle\MaintenanceBundle\Tests\EventListener;
 
 use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
 use Lexik\Bundle\MaintenanceBundle\Tests\TestHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\Translation\MessageSelector;
+use Symfony\Component\Translation\IdentityTranslator;
+use Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver;
 
 /**
  * Test for the maintenance listener
@@ -17,24 +21,23 @@ use Symfony\Component\Translation\MessageSelector;
  * @package LexikMaintenanceBundle
  * @author  Gilles Gauthier <g.gauthier@lexik.fr>
  */
-class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
+class MaintenanceListenerTest extends TestCase
 {
-    protected
-        $container,
-        $factory;
+    protected ?ContainerBuilder $container;
+    protected ?DriverFactory $factory;
 
     /**
      * Create request and test the listener
      * for scenarios with permissive firewall
      * and restrictive with no arguments
      */
-    public function testBaseRequest()
+    public function testBaseRequest(): void
     {
-        $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
+        $driverOptions = ['class' => DriverFactory::DATABASE_DRIVER, 'options' => null];
 
         $request = Request::create('http://test.com/foo?bar=baz');
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -44,7 +47,7 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
         $listener = new MaintenanceListenerTestWrapper($this->factory);
         $this->assertTrue($listener->onKernelRequest($event), 'Permissive factory should approve without args');
 
-        $listener = new MaintenanceListenerTestWrapper($this->factory, 'path', 'host', array('ip'), array('query'), array('cookie'), 'route');
+        $listener = new MaintenanceListenerTestWrapper($this->factory, 'path', 'host', ['ip'], ['query'], ['cookie'], 'route');
         $this->assertTrue($listener->onKernelRequest($event), 'Permissive factory should approve with args');
 
         $this->factory = new DriverFactory($this->getDatabaseDriver(true), $this->getTranslator(), $driverOptions);
@@ -53,7 +56,7 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
         $listener = new MaintenanceListenerTestWrapper($this->factory);
         $this->assertFalse($listener->onKernelRequest($event), 'Restrictive factory should deny without args');
 
-        $listener = new MaintenanceListenerTestWrapper($this->factory, null, null, array(), array(), array(), null);
+        $listener = new MaintenanceListenerTestWrapper($this->factory, null, null, [], [], [], null);
         $this->assertFalse($listener->onKernelRequest($event), 'Restrictive factory should deny without args');
     }
 
@@ -62,13 +65,13 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
      * for scenarios with permissive firewall
      * and path filters
      */
-    public function testPathFilter()
+    public function testPathFilter(): void
     {
         $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
 
         $request = Request::create('http://test.com/foo?bar=baz');
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -93,13 +96,13 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
      * for scenarios with permissive firewall
      * and path filters
      */
-    public function testHostFilter()
+    public function testHostFilter(): void
     {
-        $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
+        $driverOptions = ['class' => DriverFactory::DATABASE_DRIVER, 'options' => null];
 
         $request = Request::create('http://test.com/foo?bar=baz');
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -127,13 +130,13 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
      * for scenarios with permissive firewall
      * and ip filters
      */
-    public function testIPFilter()
+    public function testIPFilter(): void
     {
-        $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
+        $driverOptions = ['class' => DriverFactory::DATABASE_DRIVER, 'options' => null];
 
         $request = Request::create('http://test.com/foo?bar=baz');
         $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -159,15 +162,15 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider routeProviderWithDebugContext
      */
-    public function testRouteFilter($debug, $route, $expected)
+    public function testRouteFilter($debug, $route, $expected): void
     {
         $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
 
         $request = Request::create('');
         $request->attributes->set('_route', $route);
 
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -185,16 +188,16 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($listener->onKernelRequest($event) === $expected, $info);
     }
 
-    public function routeProviderWithDebugContext()
+    public function routeProviderWithDebugContext(): array
     {
-        $debug = array(true, false);
-        $routes = array('route_1', '_route_started_with_underscore');
+        $debug = [true, false];
+        $routes = ['route_1', '_route_started_with_underscore'];
 
-        $data = array();
+        $data = [];
 
         foreach ($debug as $isDebug) {
             foreach ($routes as $route) {
-                $data[] = array($isDebug, $route, (true === $isDebug && '_' === $route[0]) ? false : true);
+                $data[] = [$isDebug, $route, (true === $isDebug && '_' === $route[0]) ? false : true];
             }
         }
 
@@ -207,15 +210,15 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
      * for scenarios with permissive firewall
      * and query filters
      */
-    public function testQueryFilter()
+    public function testQueryFilter(): void
     {
         $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
 
         $request = Request::create('http://test.com/foo?bar=baz');
         $postRequest = Request::create('http://test.com/foo?bar=baz', 'POST');
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
-        $postEvent = new GetResponseEvent($kernel, $postRequest, HttpKernelInterface::MASTER_REQUEST);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
+        $postEvent = new RequestEvent($kernel, $postRequest, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -249,13 +252,13 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
      * for scenarios with permissive firewall
      * and cookie filters
      */
-    public function testCookieFilter()
+    public function testCookieFilter(): void
     {
-        $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
+        $driverOptions = ['class' => DriverFactory::DATABASE_DRIVER, 'options' => null];
 
-        $request = Request::create('http://test.com/foo', 'GET', array(), array('bar' => 'baz'));
-        $kernel = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernelInterface')->getMock();
-        $event = new GetResponseEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $request = Request::create('http://test.com/foo', 'GET', [], ['bar' => 'baz']);
+        $kernel = $this->getMockBuilder(HttpKernelInterface::class)->getMock();
+        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $this->container = $this->initContainer();
 
@@ -282,20 +285,15 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->container = null;
         $this->factory   = null;
     }
 
-    /**
-     * Init a container
-     *
-     * @return Container
-     */
-    protected function initContainer()
+    protected function initContainer(): ContainerBuilder
     {
-        $container = new ContainerBuilder(new ParameterBag(array(
+        return new ContainerBuilder(new ParameterBag(array(
             'kernel.debug'          => false,
             'kernel.bundles'        => array('MaintenanceBundle' => 'Lexik\Bundle\MaintenanceBundle'),
             'kernel.cache_dir'      => sys_get_temp_dir(),
@@ -303,45 +301,39 @@ class MaintenanceListenerTest extends \PHPUnit_Framework_TestCase
             'kernel.root_dir'       => __DIR__.'/../../../../', // src dir
             'kernel.default_locale' => 'fr',
         )));
-
-        return $container;
     }
 
     /**
      * Get a mock DatabaseDriver
      *
      * @param boolean $lock
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return DatabaseDriver|MockObject
      */
-    protected function getDatabaseDriver($lock = false)
+    protected function getDatabaseDriver(bool $lock = false): MockObject
     {
-        $db = $this->getMockbuilder('Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver')
+        $db = $this->getMockbuilder(DatabaseDriver::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $db->expects($this->any())
             ->method('isExists')
-            ->will($this->returnValue($lock));
+            ->willReturn($lock);
 
         $db->expects($this->any())
             ->method('decide')
-            ->will($this->returnValue($lock));
+            ->willReturn($lock);
 
         return $db;
     }
 
-    /**
-     * Get Translator
-     *
-     * @return \Symfony\Bundle\FrameworkBundle\Translation\Translator
-     */
-    public function getTranslator()
+
+    public function getTranslator(): Translator
     {
-        /** @var MessageSelector|\PHPUnit_Framework_MockObject_MockObject $messageSelector */
-        $messageSelector = $this->getMockBuilder('Symfony\Component\Translation\MessageSelector')
+        /** @var IdentityTranslator|MockObject $identityTranslator */
+        $identityTranslator = $this->getMockBuilder(IdentityTranslator::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        return TestHelper::getTranslator($this->container, $messageSelector);
+        return TestHelper::getTranslator($this->container, $identityTranslator);
     }
 }
