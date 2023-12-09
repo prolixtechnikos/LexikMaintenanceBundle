@@ -16,9 +16,6 @@ class DriverUnlockCommand extends Command
 {
 
     /**
-     * return object of Queue
-     *
-     * @return object
      * @package LexikMaintenanceBundleBundle
      */
     public function setContainer($container){
@@ -28,7 +25,7 @@ class DriverUnlockCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lexik:maintenance:unlock')
@@ -44,10 +41,10 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->confirmUnlock($input, $output)) {
-            return;
+            return 1;
         }
 
         $driver = $this->container->get('lexik_maintenance.driver.factory')->getDriver();

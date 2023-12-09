@@ -21,9 +21,6 @@ class DriverLockCommand extends Command
     protected $ttl;
 
     /**
-     * return object of Queue
-     *
-     * @return object
      * @package LexikMaintenanceBundleBundle
      */
     public function setContainer($container){
@@ -33,7 +30,7 @@ class DriverLockCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lexik:maintenance:lock')
@@ -59,14 +56,14 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $driver = $this->getDriver();
 
         if ($input->isInteractive()) {
             if (!$this->askConfirmation('WARNING! Are you sure you wish to continue? (y/n)', $input, $output)) {
                 $output->writeln('<error>Maintenance cancelled!</error>');
-                return;
+                return 1;
             }
         } elseif (null !== $input->getArgument('ttl')) {
             $this->ttl = $input->getArgument('ttl');
@@ -86,7 +83,7 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $driver = $this->getDriver();
         $default = $driver->getOptions();

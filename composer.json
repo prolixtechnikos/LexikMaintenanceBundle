@@ -1,5 +1,5 @@
 {
-    "name": "prolix/maintenance-bundle",
+    "name": "toshy/maintenance-bundle",
     "type": "symfony-bundle",
     "description": "This bundle allows you to place your website in maintenance mode by calling two commands from your console.",
     "keywords": ["Symfony2", "bundle", "maintenance"],
@@ -17,15 +17,18 @@
         {
             "name": "Djuri Baars",
             "email" : "info@djurict.nl"
+        },
+        {
+            "name": "ToshY"
         }
     ],
     "require": {
-        "php": ">=5.3.9",
-        "symfony/framework-bundle": "~2.7|~3.0|^4.0|^5.0",
-        "symfony/translation": "~2.7|~3.0|^4.0|^5.0"
+        "php": ">=7.4",
+        "symfony/framework-bundle": "~2.7|~3.0|^4.0|^5.0|^6.0|^7.0",
+        "symfony/translation": "~2.7|~3.0|^4.0|^5.0|^6.0|^7.0"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "~2.7|~3.0|^4.0|^5.0",
+        "symfony/phpunit-bridge": "~2.7|~3.0|^4.0|^5.0|^6.0|^7.0",
         "phpunit/phpunit": "8.5.*"
     },
     "autoload":     {
