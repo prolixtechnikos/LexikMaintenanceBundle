@@ -148,8 +148,8 @@ abstract class PdoQuery
             $stmt->bindValue($arg, $val, is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
         }
 
-        $stmt->execute();
-        $return = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $stmt->execute();
+        $return = $result->fetchAll(\PDO::FETCH_ASSOC);
 
         return $return;
     }

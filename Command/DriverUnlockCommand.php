@@ -25,7 +25,7 @@ class DriverUnlockCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lexik:maintenance:unlock')

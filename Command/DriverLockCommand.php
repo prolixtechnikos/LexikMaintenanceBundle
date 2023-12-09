@@ -30,7 +30,7 @@ class DriverLockCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lexik:maintenance:lock')
@@ -83,7 +83,7 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $driver = $this->getDriver();
         $default = $driver->getOptions();
