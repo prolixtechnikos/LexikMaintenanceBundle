@@ -59,14 +59,14 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $driver = $this->getDriver();
 
         if ($input->isInteractive()) {
             if (!$this->askConfirmation('WARNING! Are you sure you wish to continue? (y/n)', $input, $output)) {
                 $output->writeln('<error>Maintenance cancelled!</error>');
-                return;
+                return null;
             }
         } elseif (null !== $input->getArgument('ttl')) {
             $this->ttl = $input->getArgument('ttl');
@@ -86,7 +86,7 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $driver = $this->getDriver();
         $default = $driver->getOptions();
