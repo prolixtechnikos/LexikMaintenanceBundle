@@ -47,7 +47,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         if (!$this->confirmUnlock($input, $output)) {
-            return;
+            return null;
         }
 
         $driver = $this->container->get('lexik_maintenance.driver.factory')->getDriver();
