@@ -2,6 +2,7 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Drivers\Query;
 
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManager;
 
 /**
@@ -17,11 +18,8 @@ class DefaultQuery extends PdoQuery
      */
     protected $em;
 
-    const NAME_TABLE   = 'lexik_maintenance';
+    public const NAME_TABLE   = 'lexik_maintenance';
 
-    /**
-     * @param EntityManager $em Entity Manager
-     */
     public function __construct(EntityManager $em)
     {
         $this->em = $em;
@@ -43,8 +41,9 @@ class DefaultQuery extends PdoQuery
 
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
-    public function createTableQuery()
+    public function createTableQuery(): void
     {
         $type = $this->em->getConnection()->getDatabasePlatform()->getName() != 'mysql' ? 'timestamp' : 'datetime';
 
@@ -56,7 +55,7 @@ class DefaultQuery extends PdoQuery
     /**
      * {@inheritdoc}
      */
-    public function deleteQuery($db)
+    public function deleteQuery(\PDO $db): bool
     {
         return $this->exec($db, sprintf('DELETE FROM %s', self::NAME_TABLE));
     }
@@ -64,7 +63,7 @@ class DefaultQuery extends PdoQuery
     /**
      * {@inheritdoc}
      */
-    public function selectQuery($db)
+    public function selectQuery(\PDO $db): array
     {
         return $this->fetch($db, sprintf('SELECT ttl FROM %s', self::NAME_TABLE));
     }
@@ -72,7 +71,7 @@ class DefaultQuery extends PdoQuery
     /**
      * {@inheritdoc}
      */
-    public function insertQuery($ttl, $db)
+    public function insertQuery(int $ttl, \PDO $db): bool
     {
         return $this->exec(
             $db, sprintf('INSERT INTO %s (ttl) VALUES (:ttl)',

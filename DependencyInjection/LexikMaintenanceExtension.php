@@ -54,12 +54,9 @@ class LexikMaintenanceExtension extends Extension
 
     /**
      * Load dsn configuration
-     *
-     * @param array $options A configuration array
-     *
      * @throws InvalidArgumentException
      */
-    protected function registerDsnConfiguration($options)
+    protected function registerDsnConfiguration(array $options): void
     {
         if ( ! isset($options['table'])) {
             throw new InvalidArgumentException('You need to define table for dsn use');

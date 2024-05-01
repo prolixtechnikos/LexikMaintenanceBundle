@@ -11,7 +11,7 @@ class FileDriver extends AbstractDriver
      *
      * @param array $options    Options driver
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         parent::__construct($options);
 
@@ -36,7 +36,7 @@ class FileDriver extends AbstractDriver
     /**
      * {@inheritDoc}
      */
-    protected function createUnlock()
+    protected function createUnlock(): bool
     {
         return @unlink($this->filePath);
     }
@@ -44,26 +44,22 @@ class FileDriver extends AbstractDriver
     /**
      * {@inheritDoc}
      */
-    public function isExists()
+    public function isExists(): bool
     {
         if (file_exists($this->filePath)) {
             if (isset($this->options['ttl']) && is_numeric($this->options['ttl'])) {
                 $this->isEndTime($this->options['ttl']);
             }
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
      * Test if time to life is expired
-     *
-     * @param integer $timeTtl The ttl value
-     *
-     * @return boolean
      */
-    public function isEndTime($timeTtl)
+    public function isEndTime(int $timeTtl): bool
     {
         $now = new \DateTime('now');
         $accessTime = date("Y-m-d H:i:s.", filemtime($this->filePath));
@@ -72,28 +68,28 @@ class FileDriver extends AbstractDriver
 
         if ($accessTime < $now) {
             return $this->createUnlock();
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getMessageLock($resultTest)
+    public function getMessageLock(bool $resultTest): string
     {
         $key = $resultTest ? 'lexik_maintenance.success_lock_file' : 'lexik_maintenance.not_success_lock';
 
-        return $this->translator->trans($key, array(), 'maintenance');
+        return $this->translator->trans($key, [], 'maintenance');
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getMessageUnlock($resultTest)
+    public function getMessageUnlock(bool $resultTest): string
     {
         $key = $resultTest ? 'lexik_maintenance.success_unlock' : 'lexik_maintenance.not_success_unlock';
 
-        return $this->translator->trans($key, array(), 'maintenance');
+        return $this->translator->trans($key, [], 'maintenance');
     }
 }

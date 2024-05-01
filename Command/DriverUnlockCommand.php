@@ -14,14 +14,11 @@ use Symfony\Component\Console\Command\Command;
  */
 class DriverUnlockCommand extends Command
 {
-
     /**
      * return object of Queue
-     *
-     * @return object
-     * @package LexikMaintenanceBundleBundle
      */
-    public function setContainer($container){
+    public function setContainer($container): void
+    {
         $this->container = $container;
     }
 
@@ -44,10 +41,10 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->confirmUnlock($input, $output)) {
-            return null;
+            return Command::FAILURE;
         }
 
         $driver = $this->container->get('lexik_maintenance.driver.factory')->getDriver();
@@ -55,15 +52,10 @@ EOT
         $unlockMessage = $driver->getMessageUnlock($driver->unlock());
 
         $output->writeln('<info>'.$unlockMessage.'</info>');
-        return 0;
+        return Command::SUCCESS;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return bool
-     */
-    protected function confirmUnlock(InputInterface $input, OutputInterface $output)
+    protected function confirmUnlock(InputInterface $input, OutputInterface $output): bool
     {
         $formatter = $this->getHelperSet()->get('formatter');
 
@@ -71,11 +63,11 @@ EOT
             $confirmation = true;
         } else {
             // confirm
-            $output->writeln(array(
+            $output->writeln([
                 '',
                 $formatter->formatBlock('You are about to unlock your server.', 'bg=green;fg=white', true),
                 '',
-            ));
+            ]);
 
             $confirmation = $this->askConfirmation(
                 'WARNING! Are you sure you wish to continue? (y/n) ',

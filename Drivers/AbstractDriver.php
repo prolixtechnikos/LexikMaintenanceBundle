@@ -12,119 +12,71 @@ use Symfony\Component\Translation\Translator;
  */
 abstract class AbstractDriver
 {
-    /**
-     * @var array
-     */
-    protected $options;
-
-    /**
-     * @var Translator
-     */
-    protected $translator;
+    protected array $options;
+    protected Translator $translator;
 
     /**
      * Constructor
      *
      * @param array $options Array of options
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         $this->options = $options;
     }
 
-    /**
-     * Test if object exists
-     *
-     * @return boolean
-     */
-    abstract public function isExists();
+    abstract public function isExists(): bool;
 
-    /**
-     * Result of creation of lock
-     *
-     * @return boolean
-     */
+    /** @return bool|resource */
     abstract protected function createLock();
 
-    /**
-     * Result of create unlock
-     *
-     * @return boolean
-     */
-    abstract protected function createUnlock();
+    abstract protected function createUnlock(): bool;
 
     /**
      * The feedback message
-     *
-     * @param boolean $resultTest The result of lock
-     *
-     * @return string
      */
-    abstract public function getMessageLock($resultTest);
+    abstract public function getMessageLock(bool $resultTest): string;
 
     /**
      * The feedback message
-     *
-     * @param boolean $resultTest The result of unlock
-     *
-     * @return string
      */
-    abstract public function getMessageUnlock($resultTest);
+    abstract public function getMessageUnlock(bool $resultTest): string;
 
-    /**
-     * The response of lock
-     *
-     * @return boolean
-     */
-    public function lock()
+    public function lock(): bool
     {
         if (!$this->isExists()) {
-            return $this->createLock();
-        } else {
-            return false;
+            return (bool) $this->createLock();
         }
+
+        return false;
     }
 
-    /**
-     * The response of unlock
-     *
-     * @return boolean
-     */
-    public function unlock()
+    public function unlock(): bool
     {
         if ($this->isExists()) {
             return $this->createUnlock();
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
      * the choice of the driver to less pass or not the user
-     *
-     * @return boolean
      */
-    public function decide()
+    public function decide(): bool
     {
         return ($this->isExists());
     }
 
     /**
      * Options of driver
-     *
-     * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
-    /**
-     * Set translatorlator
-     *
-     * @param Translator $translator
-     */
-    public function setTranslator(Translator $translator)
+    public function setTranslator(Translator $translator): void
     {
         $this->translator = $translator;
     }

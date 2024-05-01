@@ -4,7 +4,8 @@ namespace Lexik\Bundle\MaintenanceBundle\Drivers;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver;
 
 /**
  * Factory for create driver
@@ -29,14 +30,14 @@ class DriverFactory
      */
     protected $translator;
 
-    const DATABASE_DRIVER = 'Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver';
+    public const DATABASE_DRIVER = DatabaseDriver::class;
 
     /**
      * Constructor driver factory
      *
-     * @param DatabaseDriver      $dbDriver The databaseDriver Service
-     * @param TranslatorInterface $translator The translator service
-     * @param array               $driverOptions Options driver
+     * @param DatabaseDriver $dbDriver The databaseDriver Service
+     * @param Translator $translator The translator service
+     * @param array $driverOptions Options driver
      * @throws \ErrorException
      */
     public function __construct(DatabaseDriver $dbDriver, Translator $translator, array $driverOptions)

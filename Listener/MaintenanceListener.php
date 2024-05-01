@@ -119,13 +119,13 @@ class MaintenanceListener
         $path = null,
         $host = null,
         $ips = null,
-        $query = array(),
-        $cookie = array(),
+        $query = [],
+        $cookie = [],
         $route = null,
-        $attributes = array(),
+        $attributes = [],
         $http_code = null,
         $http_status = null,
-        $http_exception_message = null,
+        $http_exception_message = '',
         $debug = false
     ) {
         $this->driverFactory = $driverFactory;
@@ -201,7 +201,7 @@ class MaintenanceListener
         // Get driver class defined in your configuration
         $driver = $this->driverFactory->getDriver();
 
-        if ($driver->decide() && HttpKernelInterface::MASTER_REQUEST === $event->getRequestType()) {
+        if ($driver->decide() && HttpKernelInterface::MAIN_REQUEST === $event->getRequestType()) {
             $this->handleResponse = true;
             throw new ServiceUnavailableException($this->http_exception_message);
         }
