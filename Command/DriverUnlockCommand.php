@@ -15,6 +15,8 @@ use Symfony\Component\Console\Command\Command;
 class DriverUnlockCommand extends Command
 {
 
+    protected $container;
+
     /**
      * return object of Queue
      *
