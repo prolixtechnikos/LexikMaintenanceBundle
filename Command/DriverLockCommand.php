@@ -20,6 +20,8 @@ class DriverLockCommand extends Command
 {
     protected $ttl;
 
+    protected $container;
+
     /**
      * @package LexikMaintenanceBundleBundle
      */
