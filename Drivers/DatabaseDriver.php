@@ -40,7 +40,7 @@ class DatabaseDriver extends AbstractDriver implements DriverTtlInterface
      *
      * @param Registry $doctrine The registry
      */
-    public function __construct(Registry $doctrine = null)
+    public function __construct(?Registry $doctrine = null)
     {
         $this->doctrine = $doctrine;
     }
