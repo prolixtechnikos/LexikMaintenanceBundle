@@ -46,10 +46,10 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->confirmUnlock($input, $output)) {
-            return null;
+            return Command::FAILURE;
         }
 
         $driver = $this->container->get('lexik_maintenance.driver.factory')->getDriver();
@@ -57,7 +57,7 @@ EOT
         $unlockMessage = $driver->getMessageUnlock($driver->unlock());
 
         $output->writeln('<info>'.$unlockMessage.'</info>');
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

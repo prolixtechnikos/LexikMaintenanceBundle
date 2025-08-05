@@ -201,7 +201,7 @@ class MaintenanceListener
         // Get driver class defined in your configuration
         $driver = $this->driverFactory->getDriver();
 
-        if ($driver->decide() && HttpKernelInterface::MASTER_REQUEST === $event->getRequestType()) {
+        if ($driver->decide() && HttpKernelInterface::MAIN_REQUEST === $event->getRequestType()) {
             $this->handleResponse = true;
             throw new ServiceUnavailableException($this->http_exception_message);
         }
