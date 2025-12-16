@@ -20,13 +20,16 @@
         }
     ],
     "require": {
-        "php": ">=5.3.9",
+        "php": ">=8.0",
+        "doctrine/doctrine-bundle": "^2.8",
+        "doctrine/orm": "^2.14",
+        "symfony/console": "^5.4|^6.0|^7.0",
         "symfony/framework-bundle": "^6.0|^7.0",
-        "symfony/translation": "^6.0|^7.0"
+        "symfony/translation": "^^6.0|^7.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0|^7.0",
-        "phpunit/phpunit": "8.5.*"
+        "phpunit/phpunit": "^8.5|^9.5"
     },
     "autoload":     {
         "psr-4": { "Lexik\\Bundle\\MaintenanceBundle\\": "" }

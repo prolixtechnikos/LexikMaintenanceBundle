@@ -2,11 +2,17 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Tests\Maintenance;
 
+use ErrorException;
 use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
 use Lexik\Bundle\MaintenanceBundle\Tests\TestHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Translation\MessageSelector;
+use Symfony\Component\Translation\IdentityTranslator;
+use Lexik\Bundle\MaintenanceBundle\Drivers\FileDriver;
+use PHPUnit\Framework\TestCase;
+use Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver;
 
 /**
  * Test driver factory
@@ -14,16 +20,17 @@ use Symfony\Component\Translation\MessageSelector;
  * @package LexikMaintenanceBundle
  * @author  Gilles Gauthier <g.gauthier@lexik.fr>
  */
-class DriverFactoryTest extends \PHPUnit_Framework_TestCase
+class DriverFactoryTest extends TestCase
 {
-    protected $factory;
-    protected $container;
+    protected ?DriverFactory $factory;
+    protected ?ContainerBuilder $container;
 
-    public function setUp()
+    public function setUp(): void
     {
-        $driverOptions = array(
-            'class' => '\Lexik\Bundle\MaintenanceBundle\Drivers\FileDriver',
-            'options' => array('file_path' => sys_get_temp_dir().'/lock'));
+        $driverOptions = [
+            'class' => FileDriver::class,
+            'options' => ['file_path' => sys_get_temp_dir().'/lock']
+        ];
 
         $this->container = $this->initContainer();
 
@@ -31,26 +38,24 @@ class DriverFactoryTest extends \PHPUnit_Framework_TestCase
         $this->container->set('lexik_maintenance.driver.factory', $this->factory);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->factory = null;
     }
 
-    public function testDriver()
+    public function testDriver(): void
     {
         $driver = $this->factory->getDriver();
-        $this->assertInstanceOf('\Lexik\Bundle\MaintenanceBundle\Drivers\FileDriver', $driver);
+        $this->assertInstanceOf(FileDriver::class, $driver);
     }
 
-    /**
-     * @expectedException ErrorException
-     */
-    public function testExceptionConstructor()
+    public function testExceptionConstructor(): void
     {
+        $this->expectException(ErrorException::class);
         $factory = new DriverFactory($this->getDatabaseDriver(), $this->getTranslator(), array());
     }
 
-    public function testWithDatabaseChoice()
+    public function testWithDatabaseChoice(): void
     {
         $driverOptions = array('class' => DriverFactory::DATABASE_DRIVER, 'options' => null);
 
@@ -58,10 +63,10 @@ class DriverFactoryTest extends \PHPUnit_Framework_TestCase
 
         $this->container->set('lexik_maintenance.driver.factory', $factory);
 
-        $this->assertInstanceOf('Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver', $factory->getDriver());
+        $this->assertInstanceOf(DatabaseDriver::class, $factory->getDriver());
     }
 
-    public function testExceptionGetDriver()
+    public function testExceptionGetDriver(): void
     {
         $driverOptions = array('class' => '\Unknown', 'options' => null);
 
@@ -77,36 +82,32 @@ class DriverFactoryTest extends \PHPUnit_Framework_TestCase
         $this->fail('An expected exception has not been raised.');
     }
 
-    protected function initContainer()
+    protected function initContainer(): ContainerBuilder
     {
-        $container = new ContainerBuilder(new ParameterBag(array(
+        return new ContainerBuilder(new ParameterBag([
             'kernel.debug'          => false,
-            'kernel.bundles'        => array('MaintenanceBundle' => 'Lexik\Bundle\MaintenanceBundle'),
+            'kernel.bundles'        => ['MaintenanceBundle' => 'Lexik\Bundle\MaintenanceBundle'],
             'kernel.cache_dir'      => sys_get_temp_dir(),
             'kernel.environment'    => 'dev',
             'kernel.root_dir'       => __DIR__.'/../../../../', // src dir
             'kernel.default_locale' => 'fr',
-        )));
-
-        return $container;
+        ]));
     }
 
     protected function getDatabaseDriver()
     {
-        $db = $this->getMockbuilder('Lexik\Bundle\MaintenanceBundle\Drivers\DatabaseDriver')
+        return $this->getMockbuilder(DatabaseDriver::class)
                 ->disableOriginalConstructor()
                 ->getMock();
-
-        return $db;
     }
 
-    public function getTranslator()
+    public function getTranslator(): Translator
     {
-        /** @var MessageSelector|\PHPUnit_Framework_MockObject_MockObject $messageSelector */
-        $messageSelector = $this->getMockBuilder('Symfony\Component\Translation\MessageSelector')
+        /** @var IdentityTranslator|MockObject $identityTranslator */
+        $identityTranslator = $this->getMockBuilder(IdentityTranslator::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        return TestHelper::getTranslator($this->container, $messageSelector);
+        return TestHelper::getTranslator($this->container, $identityTranslator);
     }
 }

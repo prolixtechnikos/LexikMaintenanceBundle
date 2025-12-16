@@ -2,6 +2,8 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Drivers;
 
+use Symfony\Component\Translation\Translator;
+
 /**
  * Class to handle a shared memory driver
  *
@@ -15,14 +17,14 @@ class ShmDriver extends AbstractDriver
      *
      * @var string
      */
-    const VALUE_TO_STORE = "maintenance";
+    public const VALUE_TO_STORE = "maintenance";
 
     /**
      * Variable key
      *
      * @var integer
      */
-    const VARIABLE_KEY = 1;
+    public const VARIABLE_KEY = 1;
 
     /**
      * The key store in shm
@@ -110,7 +112,7 @@ class ShmDriver extends AbstractDriver
     /**
      * {@inheritdoc}
      */
-    public function getMessageLock($resultTest)
+    public function getMessageLock(bool $resultTest)
     {
         $key = $resultTest ? 'lexik_maintenance.success_lock_shm' : 'lexik_maintenance.not_success_lock';
 
@@ -120,7 +122,7 @@ class ShmDriver extends AbstractDriver
     /**
      * {@inheritdoc}
      */
-    public function getMessageUnlock($resultTest)
+    public function getMessageUnlock(bool $resultTest)
     {
         $key = $resultTest ? 'lexik_maintenance.success_unlock' : 'lexik_maintenance.not_success_unlock';
 

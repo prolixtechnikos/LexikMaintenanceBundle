@@ -119,13 +119,13 @@ class MaintenanceListener
         $path = null,
         $host = null,
         $ips = null,
-        $query = array(),
-        $cookie = array(),
+        $query = [],
+        $cookie = [],
         $route = null,
-        $attributes = array(),
+        $attributes = [],
         $http_code = null,
         $http_status = null,
-        $http_exception_message = null,
+        $http_exception_message = '',
         $debug = false
     ) {
         $this->driverFactory = $driverFactory;
