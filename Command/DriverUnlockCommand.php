@@ -2,22 +2,29 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Command;
 
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * Create an unlock action
  *
  * @package LexikMaintenanceBundle
- * @author  Gilles Gauthier <g.gauthier@lexik.fr>
+ * @author  Gilles Gauthier
  */
 class DriverUnlockCommand extends Command
 {
     /**
-     * return object of Queue
+     * Service container used to fetch the maintenance driver factory.
      */
-    public function setContainer($container): void
+    protected ContainerInterface $container;
+
+    /**
+     * Kept for BC with existing service definitions that call setContainer().
+     */
+    public function setContainer(ContainerInterface $container): void
     {
         $this->container = $container;
     }
@@ -35,34 +42,41 @@ class DriverUnlockCommand extends Command
 
     <info>%command.full_name% --no-interaction</info>
 EOT
-                );
+            );
     }
 
     /**
-     * {@inheritdoc}
+     * Symfony 7-compatible execute signature.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->confirmUnlock($input, $output)) {
+            // User cancelled → non-zero exit code
             return Command::FAILURE;
         }
 
-        $driver = $this->container->get('lexik_maintenance.driver.factory')->getDriver();
+        $driver = $this->container
+            ->get('lexik_maintenance.driver.factory')
+            ->getDriver();
 
         $unlockMessage = $driver->getMessageUnlock($driver->unlock());
 
-        $output->writeln('<info>'.$unlockMessage.'</info>');
+        $output->writeln('<info>' . $unlockMessage . '</info>');
+
         return Command::SUCCESS;
     }
 
+    /**
+     * Ask the user to confirm unlocking, unless running non-interactively.
+     */
     protected function confirmUnlock(InputInterface $input, OutputInterface $output): bool
     {
         $formatter = $this->getHelperSet()->get('formatter');
 
-        if ($input->getOption('no-interaction', false)) {
+        // Global Symfony option --no-interaction
+        if ($input->getOption('no-interaction')) {
             $confirmation = true;
         } else {
-            // confirm
             $output->writeln([
                 '',
                 $formatter->formatBlock('You are about to unlock your server.', 'bg=green;fg=white', true),
@@ -84,21 +98,13 @@ EOT
     }
 
     /**
-     * This method ensure that we stay compatible with symfony console 2.3 by using the deprecated dialog helper
-     * but use the ConfirmationQuestion when available.
-     *
-     * @param $question
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return mixed
+     * Ask a yes/no question using the modern QuestionHelper API.
      */
-    protected function askConfirmation($question, InputInterface $input, OutputInterface $output) {
-        if (!$this->getHelperSet()->has('question')) {
-            return $this->getHelper('dialog')
-                ->askConfirmation($output, '<question>' . $question . '</question>', 'y');
-        }
+    protected function askConfirmation(string $question, InputInterface $input, OutputInterface $output): bool
+    {
+        $helper       = $this->getHelper('question');
+        $confirmation = new ConfirmationQuestion('<question>' . $question . '</question>', true);
 
-        return $this->getHelper('question')
-            ->ask($input, $output, new \Symfony\Component\Console\Question\ConfirmationQuestion($question));
+        return $helper->ask($input, $output, $confirmation);
     }
 }
