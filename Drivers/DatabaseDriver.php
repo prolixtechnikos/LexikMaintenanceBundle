@@ -15,7 +15,7 @@ use Lexik\Bundle\MaintenanceBundle\Drivers\Query\DsnQuery;
 class DatabaseDriver extends AbstractDriver implements DriverTtlInterface
 {
     /**
-     * @var Registry
+     * @var Registry|null
      */
     protected $doctrine;
 
@@ -38,9 +38,9 @@ class DatabaseDriver extends AbstractDriver implements DriverTtlInterface
     /**
      * Constructor
      *
-     * @param Registry $doctrine The registry
+     * @param Registry|null $doctrine The registry
      */
-    public function __construct(Registry $doctrine = null)
+    public function __construct(?Registry $doctrine = null)
     {
         $this->doctrine = $doctrine;
     }
